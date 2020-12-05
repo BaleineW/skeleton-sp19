@@ -4,7 +4,7 @@ public class ArrayDeque<T> {
     private int last;
     private int size;
 
-    public ArrayDeque(){
+    public ArrayDeque() {
         items = (T[]) new Object[8];
         first = 1;
         last = -1;
@@ -19,13 +19,15 @@ public class ArrayDeque<T> {
         return size == 0;
     }
 
-    public T get(int index){
-        if (size + 1 < index) return null;
-        int new_index = (first + index) % items.length;
-        return items[new_index];
+    public T get(int index) {
+        if (size + 1 < index) {
+            return null;
+        }
+        int newIndex = (first + index) % items.length;
+        return items[newIndex];
     }
 
-    public void printDeque(){
+    public void printDeque() {
         int index = first;
         for (int i = 0; i < size; i++){
             System.out.print(items[index] + " ");
@@ -34,7 +36,7 @@ public class ArrayDeque<T> {
         System.out.println();
     }
 
-    private void resize(int capacity){
+    private void resize(int capacity) {
         T[] a = (T[]) new Object[capacity];
         int index = first;
         for (int i = 0; i < size; i++){
@@ -46,7 +48,7 @@ public class ArrayDeque<T> {
         last = size - 1;
     }
 
-    public void addFirst(T x){
+    public void addFirst(T x) {
         if (size == items.length){
             resize(size * 2);
         }
@@ -55,7 +57,7 @@ public class ArrayDeque<T> {
         size += 1;
     }
 
-    public void addLast(T x){
+    public void addLast(T x) {
         if (size == items.length){
             resize(size * 2);
         }
@@ -64,7 +66,7 @@ public class ArrayDeque<T> {
         size += 1;
     }
 
-    public T removeFirst(){
+    public T removeFirst() {
         if (items.length >= 16 && size * 4 < items.length){
             resize(items.length / 2);
         }
@@ -75,7 +77,7 @@ public class ArrayDeque<T> {
         return x;
     }
 
-    public T removeLast(){
+    public T removeLast() {
         if (items.length >= 16 && size * 4 < items.length){
             resize(items.length / 2);
         }
@@ -86,8 +88,8 @@ public class ArrayDeque<T> {
         return x;
     }
 
-    /* deep copy */
-    public ArrayDeque(ArrayDeque target){
+    /* deep copy
+    public ArrayDeque(ArrayDeque target) {
         items = (T[]) new Object[target.size];
         first = 0;
         size = target.size();
@@ -97,6 +99,6 @@ public class ArrayDeque<T> {
             items[i] = (T) target.items[index];
             index = (index + 1) % target.items.length;
         }
-    }
+    } */
 
 }

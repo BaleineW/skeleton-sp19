@@ -18,7 +18,7 @@ public class LinkedListDeque<T> {
         sentinel.next = sentinel;
         size = 0;
     }
-
+/*
     public LinkedListDeque(T x){
         sentinel = new TNode(null, null, null);
         TNode node = new TNode(x, sentinel, sentinel);
@@ -26,7 +26,7 @@ public class LinkedListDeque<T> {
         sentinel.prev = node;
         size = 1;
     }
-
+*/
     public int size(){
         return size;
     }
@@ -71,7 +71,10 @@ public class LinkedListDeque<T> {
         size += 1;
     }
 
-    public T removeFirst(){
+    public T removeFirst() {
+        if (size == 0) {
+            return null;
+        }
         TNode node = sentinel.next;
         node.next.prev = sentinel;
         sentinel.next = node.next;
@@ -79,7 +82,10 @@ public class LinkedListDeque<T> {
         return node.item;
     }
 
-    public T removeLast(){
+    public T removeLast() {
+        if (size == 0) {
+            return null;
+        }
         TNode node = sentinel.prev;
         node.prev.next = sentinel;
         sentinel.prev = node.prev;
@@ -88,20 +94,22 @@ public class LinkedListDeque<T> {
     }
 
     /* using recursion to get */
-    public T getRecursive(int index, TNode node){
+    public T getRecursive(int index, TNode node) {
         if (index == 0){
             return node.item;
         }
         return getRecursive(index-1, node.next);
     }
 
-    public T getRecursive(int index){
-        if (size - 1 < index) return null;
+    public T getRecursive(int index) {
+        if (size - 1 < index) {
+            return null;
+        }
         return getRecursive(index, sentinel.next);
     }
 
-    /* deep copy */
-    public LinkedListDeque(LinkedListDeque target){
+    /* deep copy
+    public LinkedListDeque(LinkedListDeque target) {
         sentinel = new TNode(null, null, null);
         sentinel.next = sentinel;
         sentinel.prev = sentinel;
@@ -109,5 +117,5 @@ public class LinkedListDeque<T> {
         for (int i = 0; i < target.size; i++){
             addLast((T) target.get(i));
         }
-    }
+    }*/
 }
