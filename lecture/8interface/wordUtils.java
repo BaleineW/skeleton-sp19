@@ -18,5 +18,6 @@ public class wordUtils {
         someList.addFirst("do");
         someList.addFirst("bark");
         System.out.println(longest(someList));
+        someList.print();
     }
 }
