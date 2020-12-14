@@ -22,6 +22,8 @@ public class testUnionFind {
         assertEquals(-5, lst.parent(1));
         assertEquals(5, lst.sizeOf(2));
         assertEquals(3, lst.parent(4));
+        assertEquals(1, lst.find(4));
+        assertEquals(1, lst.parent(4));
         assertEquals(6, lst.parent(7));
         assertEquals(-2, lst.parent(6));
         assertEquals(1, lst.sizeOf(8));
