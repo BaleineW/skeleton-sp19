@@ -20,7 +20,7 @@ public class Percolation {
     // create N-by-N grid, with all sited initially blocked
     public Percolation(int N) {
         if (N <= 0) {
-            throw new IndexOutOfBoundsException("The given size N is invalid!");
+            throw new IllegalArgumentException("The given size N is invalid!");
         }
         grid = new boolean[N][N];
         size = N;
@@ -91,10 +91,14 @@ public class Percolation {
         Percolation pclt = new Percolation(3);
         pclt.open(0, 0);
         assertEquals(false, pclt.percolates());
+        assertFalse(pclt.isFull(1, 2));
         pclt.open(1, 0);
         pclt.open(2, 0);
         assertEquals(true, pclt.percolates());
+        assertTrue(pclt.isFull(1, 0));
         pclt.open(2, 2);
+        pclt.open(1, 1);
+        assertTrue(pclt.isFull(1, 1));
         assertEquals(false, pclt.isFull(2, 2));
         assertTrue(pclt.isFull(1, 0));
         Percolation pclt2 = new Percolation(1);
