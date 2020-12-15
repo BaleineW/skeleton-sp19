@@ -29,11 +29,6 @@ public class Percolation {
         bottom = N * N + 1;
         wuf = new WeightedQuickUnionUF(N * N + 2);
         wufNoBottom = new WeightedQuickUnionUF(N * N + 1);
-        for (int i = 0; i < size; i++){
-            wuf.union(top, toInt(0, i));
-            wufNoBottom.union(top, toInt(0, i));
-            wuf.union(bottom, toInt(size-1, i));
-        }
     }
     // transform 2d position to 1d
     private int toInt(int row, int col) {
@@ -89,6 +84,8 @@ public class Percolation {
     // use for unit testing
     public static void main(String[] args) {
         Percolation pclt = new Percolation(3);
+        boolean test1 = pclt.isFull(0, 0);
+        assertFalse(pclt.isFull(0, 0));
         pclt.open(0, 0);
         assertEquals(false, pclt.percolates());
         assertFalse(pclt.isFull(1, 2));
