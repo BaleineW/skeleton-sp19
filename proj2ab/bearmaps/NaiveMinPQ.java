@@ -9,8 +9,7 @@ import java.util.NoSuchElementException;
  *  correct, with one exception: The add method
  *  should throw an exception if the item already exists,
  *  but doing so makes the add method painfully slow to the
- *  point where this class is very difficult to use for testing.
- *  @author Matt Owen @since 03-11-19 */
+ *  point where this class is very difficult to use for testing.*/
 public class NaiveMinPQ<T> implements ExtrinsicMinPQ<T> {
 
     private ArrayList<PriorityNode> items;
