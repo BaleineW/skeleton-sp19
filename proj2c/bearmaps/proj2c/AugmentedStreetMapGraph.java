@@ -2,23 +2,47 @@ package bearmaps.proj2c;
 
 import bearmaps.hw4.streetmap.Node;
 import bearmaps.hw4.streetmap.StreetMapGraph;
+import bearmaps.proj2ab.KDTree;
 import bearmaps.proj2ab.Point;
+import edu.princeton.cs.algs4.TrieSET;
 
 import java.util.*;
 
 /**
  * An augmented graph that is more powerful that a standard StreetMapGraph.
  * Specifically, it supports the following additional operations:
- *
- *
- * @author Alan Yao, Josh Hug, ________
  */
 public class AugmentedStreetMapGraph extends StreetMapGraph {
+    private Map<Point, Long> pointToNode;
+    private KDTree kdTree;
+    private TrieSET nameTrie;
+    private Map<String, LinkedList<Node>> nameToNodeList;
 
     public AugmentedStreetMapGraph(String dbPath) {
         super(dbPath);
-        // You might find it helpful to uncomment the line below:
-        // List<Node> nodes = this.getNodes();
+        pointToNode = new HashMap<>();
+        List<Point> points = new LinkedList<>();
+        List<Node> nodes = this.getNodes();
+        for (Node node : nodes) {
+            if (!this.neighbors(node.id()).isEmpty()) {
+                double lon = node.lon();
+                double lat = node.lat();
+                Point pt = new Point(lon, lat);
+                points.add(pt);
+                pointToNode.put(pt, node.id());
+            }
+            if (node.name() != null) {
+                String nodeName = cleanString(node.name());
+                nameTrie.add(nodeName);
+                if (!nameToNodeList.containsKey(nodeName)) {
+                    nameToNodeList.put(nodeName, new LinkedList<>());
+                }
+                LinkedList<Node> nodeList = nameToNodeList.get(nodeName);
+                nodeList.add(node);
+                nameToNodeList.put(nodeName, nodeList);
+            }
+        }
+        kdTree = new KDTree(points);
     }
 
 
@@ -30,7 +54,8 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * @return The id of the node in the graph closest to the target.
      */
     public long closest(double lon, double lat) {
-        return 0;
+        Point closestPoint = kdTree.nearest(lon, lat);
+        return pointToNode.get(closestPoint);
     }
 
 
@@ -43,7 +68,15 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * cleaned <code>prefix</code>.
      */
     public List<String> getLocationsByPrefix(String prefix) {
-        return new LinkedList<>();
+        String cleanPrefix = cleanString(prefix);
+        Iterable<String> nameWithPrefix = nameTrie.keysWithPrefix(cleanPrefix);
+        Set<String> locations = new HashSet<>();
+        for (String name : nameWithPrefix) {
+            for (Node node : nameToNodeList.get(name)) {
+                locations.add(node.name());
+            }
+        }
+        return new LinkedList<>(locations);
     }
 
     /**
@@ -60,15 +93,24 @@ public class AugmentedStreetMapGraph extends StreetMapGraph {
      * "id" -> Number, The id of the node. <br>
      */
     public List<Map<String, Object>> getLocations(String locationName) {
-        return new LinkedList<>();
+        String cleanName = cleanString(locationName);
+        List<Map<String, Object>> locations = new LinkedList<>();
+        if (nameToNodeList.containsKey(cleanName)) {
+            for (Node node : nameToNodeList.get(cleanName)) {
+                Map<String, Object> nodeMap = new HashMap<>();
+                nodeMap.put("id", node.id());
+                nodeMap.put("lon", node.lon());
+                nodeMap.put("lat", node.lat());
+                nodeMap.put("name", node.name());
+                locations.add(nodeMap);
+            }
+        }
+        return locations;
     }
 
 
     /**
-     * Useful for Part III. Do not modify.
      * Helper to process strings into their "cleaned" form, ignoring punctuation and capitalization.
-     * @param s Input string.
-     * @return Cleaned string.
      */
     private static String cleanString(String s) {
         return s.replaceAll("[^a-zA-Z ]", "").toLowerCase();

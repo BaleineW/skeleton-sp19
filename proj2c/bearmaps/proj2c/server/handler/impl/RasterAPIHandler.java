@@ -17,13 +17,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static bearmaps.proj2c.utils.Constants.SEMANTIC_STREET_GRAPH;
-import static bearmaps.proj2c.utils.Constants.ROUTE_LIST;
+import static bearmaps.proj2c.utils.Constants.*;
 
 /**
  * Handles requests from the web browser for map images. These images
  * will be rastered into one large image to be displayed to the user.
- * @author rahul, Josh Hug, _________
  */
 public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<String, Object>> {
 
@@ -84,12 +82,88 @@ public class RasterAPIHandler extends APIRouteHandler<Map<String, Double>, Map<S
      */
     @Override
     public Map<String, Object> processRequest(Map<String, Double> requestParams, Response response) {
-        //System.out.println("yo, wanna know the parameters given by the web browser? They are:");
-        //System.out.println(requestParams);
+        // System.out.println("yo, wanna know the parameters given by the web browser? They are:");
+        // System.out.println(requestParams);
         Map<String, Object> results = new HashMap<>();
-        System.out.println("Since you haven't implemented RasterAPIHandler.processRequest, nothing is displayed in "
-                + "your browser.");
+        String[][] render_grid;
+        double raster_ul_lon;
+        double raster_ul_lat;
+        double raster_lr_lon;
+        double raster_lr_lat;
+        int depth;
+        boolean query_success = true;
+        // get params
+        double ullat = requestParams.get("ullat");
+        double ullon = requestParams.get("ullon");
+        double lrlat = requestParams.get("lrlat");
+        double lrlon = requestParams.get("lrlon");
+        double w = requestParams.get("w");
+        double h = requestParams.get("h");
+        // Case 1: invalid request
+        if (Double.compare(lrlon, ullon) < 0 || Double.compare(lrlat, ullat) > 0) {
+            query_success = false;
+        }
+        // Case 2: no coverage (query ox completely outside of the root longitude/latitude)
+        if (Double.compare(lrlon, ROOT_ULLON) < 0 || Double.compare(lrlat, ROOT_ULLAT) > 0
+                || Double.compare(ullon, ROOT_LRLON) > 0 || Double.compare(ullat, ROOT_LRLAT) < 0) {
+            query_success = false;
+        }
+        results.put("query_success", query_success);
+        // Case 3: valid request
+        double LonDPP = (lrlon - ullon) / w;
+        depth = getDepth(LonDPP);
+        results.put("depth", depth);
+        int ullon_grid = getGridNum(depth, ullon, ROOT_ULLON, ROOT_LRLON);
+        raster_ul_lon = getGridParam(depth, ullon_grid, ROOT_ULLON, ROOT_LRLON, true, true);
+        results.put("raster_ul_lon", raster_ul_lon);
+        int ullat_grid = getGridNum(depth, ullat, ROOT_ULLAT, ROOT_LRLAT);
+        raster_ul_lat = getGridParam(depth, ullat_grid, ROOT_ULLAT, ROOT_LRLAT, true, false);
+        results.put("raster_ul_lat", raster_ul_lat);
+        int lrlon_grid = getGridNum(depth, lrlon, ROOT_ULLON, ROOT_LRLON);
+        raster_lr_lon = getGridParam(depth, lrlon_grid, ROOT_ULLON, ROOT_LRLON, false, true);
+        results.put("raster_lr_lon", raster_lr_lon);
+        int lrlat_grid = getGridNum(depth, lrlat, ROOT_ULLAT, ROOT_LRLAT);
+        raster_lr_lat = getGridParam(depth, lrlat_grid, ROOT_ULLAT, ROOT_LRLAT, false, false);
+        results.put("raster_lr_lat", raster_lr_lat);
+        // fill in render_grid
+        int rowNum = lrlat_grid - ullat_grid + 1;
+        int colNum = lrlon_grid - ullon_grid + 1;
+        render_grid = new String[rowNum][colNum];
+        for (int i = 0; i < rowNum; i += 1) {
+            for (int j = 0; j < colNum; j += 1) {
+                render_grid[i][j] = "d" + depth + "_x" + (j+ullon_grid) + "_y" + (i+ullat_grid) + ".png";
+            }
+        }
+        results.put("render_grid", render_grid);
         return results;
+    }
+
+    private int getDepth(double LonDPP) {
+        double baseLonDPP = (ROOT_LRLON - ROOT_ULLON) / TILE_SIZE;
+        int depth = (int) (Math.ceil(Math.log(LonDPP / baseLonDPP) / Math.log(0.5)));
+        return Math.min(depth, 7);
+    }
+    // find the corresponding covered grid number
+    private int getGridNum(int depth, double request, double rootUL, double rootLR) {
+        int gridsN = (int) (Math.pow(2, depth));
+        double tileSize = Math.abs(rootLR - rootUL) / gridsN;
+        int gridNum = (int) (Math.floor(Math.abs(request - rootUL) / tileSize));
+        gridNum = Math.min(Math.max(0, gridNum), gridsN - 1);
+        return gridNum;
+    }
+    // find the corresponding parameter of some given grid
+    private double getGridParam(int depth, int gridNum, double rootUL, double rootLR, boolean isUL, boolean isLON) {
+        int gridsN = (int) (Math.pow(2, depth));
+        double tileSize = Math.abs(rootLR - rootUL) / gridsN;
+        double gridParam;
+        if (isUL) {
+            if (isLON) gridParam = rootUL + tileSize * gridNum;
+            else gridParam = rootUL - tileSize * gridNum;
+        } else {
+            if (isLON) gridParam = rootUL + tileSize * (gridNum + 1);
+            else gridParam = rootUL - tileSize * (gridNum + 1);
+        }
+        return gridParam;
     }
 
     @Override
